@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Continents>
+  <Continent>
+    <ContinentName>North America</ContinentName>
+    <Country>
+      <CountryName>United States</CountryName>
+      <CountryCode>US</CountryCode>
+      <CountryCapital>Washington, D.C.</CountryCapital>
+      <Population>331002651</Population>
+      <Subdivision>50 states and 1 federal district</Subdivision>
+      <State type="state">
+        <StateName>California</StateName>
+        <EnglishStateName>California</EnglishStateName>
+        <StateCode>CA</StateCode>
+        <StateCapital>Sacramento</StateCapital>
+        <RegionName>West</RegionName>
+        <RegionCode>W</RegionCode>
+      </State>
+      <State type="state">
+        <StateName>Washington</StateName>
+        <EnglishStateName>Washington</EnglishStateName>
+        <StateCode>WA</StateCode>
+        <StateCapital>Olympia</StateCapital>
+        <RegionName>West</RegionName>
+        <RegionCode>W</RegionCode>
+      </State>
+      <State type="state">
+        <StateName>Texas</StateName>
+        <EnglishStateName>Texas</EnglishStateName>
+        <StateCode>TX</StateCode>
+        <StateCapital>Austin</StateCapital>
+        <RegionName>South</RegionName>
+        <RegionCode>S</RegionCode>
+      </State>
+      <State type="state">
+        <StateName>New York</StateName>
+        <EnglishStateName>New York</EnglishStateName>
+        <StateCode>NY</StateCode>
+        <StateCapital>Albany</StateCapital>
+        <RegionName>Northeast</RegionName>
+        <RegionCode>NE</RegionCode>
+      </State>
+    </Country>
+    <Country>
+      <CountryName>Canada</CountryName>
+      <CountryCode>CA</CountryCode>
+      <CountryCapital>Ottawa</CountryCapital>
+      <Population>38005238</Population>
+      <Subdivision>10 provinces and 3 territories</Subdivision>
+      <State type="province">
+        <StateName>Ontario</StateName>
+        <EnglishStateName>Ontario</EnglishStateName>
+        <StateCode>ON</StateCode>
+        <StateCapital>Toronto</StateCapital>
+        <RegionName>Central Canada</RegionName>
+        <RegionCode>CC</RegionCode>
+      </State>
+      <State type="province">
+        <StateName>Quebec</StateName>
+        <EnglishStateName>Quebec</EnglishStateName>
+        <StateCode>QC</StateCode>
+        <StateCapital>Quebec City</StateCapital>
+        <RegionName>Central Canada</RegionName>
+        <RegionCode>CC</RegionCode>
+      </State>
+    </Country>
+  </Continent>
+  <Continent>
+    <ContinentName>Europe</ContinentName>
+    <Country>
+      <CountryName>Germany</CountryName>
+      <CountryCode>DE</CountryCode>
+      <CountryCapital>Berlin</CountryCapital>
+      <Population>83783942</Population>
+      <Subdivision>16 Bundeslander (states)</Subdivision>
+      <State type="state">
+        <StateName>Nordrhein-Westfalen</StateName>
+        <EnglishStateName>North Rhine-Westphalia</EnglishStateName>
+        <StateCode>NW</StateCode>
+        <StateCapital>Dusseldorf</StateCapital>
+        <RegionName>Western Germany</RegionName>
+        <RegionCode>WG</RegionCode>
+      </State>
+      <State type="state">
+        <StateName>Bayern</StateName>
+        <EnglishStateName>Bavaria</EnglishStateName>
+        <StateCode>BY</StateCode>
+        <StateCapital>Munich</StateCapital>
+        <RegionName>Southern Germany</RegionName>
+        <RegionCode>SG</RegionCode>
+      </State>
+    </Country>
+    <Country>
+      <CountryName>France</CountryName>
+      <CountryCode>FR</CountryCode>
+      <CountryCapital>Paris</CountryCapital>
+      <Population>65273511</Population>
+      <Subdivision>18 administrative regions</Subdivision>
+      <State type="region">
+        <StateName>Ile-de-France</StateName>
+        <EnglishStateName>Ile-de-France</EnglishStateName>
+        <StateCode>IDF</StateCode>
+        <StateCapital>Paris</StateCapital>
+        <RegionName>North-Central</RegionName>
+        <RegionCode>NC</RegionCode>
+      </State>
+      <State type="region">
+        <StateName>Auvergne-Rhone-Alpes</StateName>
+        <EnglishStateName>Auvergne-Rhone-Alpes</EnglishStateName>
+        <StateCode>ARA</StateCode>
+        <StateCapital>Lyon</StateCapital>
+        <RegionName>South-East</RegionName>
+        <RegionCode>SE</RegionCode>
+      </State>
+    </Country>
+    <Country>
+      <CountryName>Poland</CountryName>
+      <CountryCode>PL</CountryCode>
+      <CountryCapital>Warsaw</CountryCapital>
+      <Population>37846611</Population>
+      <Subdivision>16 voivodeships</Subdivision>
+    </Country>
+  </Continent>
+  <Continent>
+    <ContinentName>Asia</ContinentName>
+    <Country>
+      <CountryName>Vietnam</CountryName>
+      <CountryCode>VN</CountryCode>
+      <CountryCapital>Hanoi</CountryCapital>
+      <Population>97338579</Population>
+      <Subdivision>58 provinces and 5 municipalities</Subdivision>
+    </Country>
+    <Country>
+      <CountryName>Singapore</CountryName>
+      <CountryCode>SG</CountryCode>
+      <CountryCapital>Singapore</CountryCapital>
+      <Population>5850342</Population>
+      <Subdivision>Unitary city-state without states</Subdivision>
+    </Country>
+    <Country>
+      <CountryName>Japan</CountryName>
+      <CountryCode>JP</CountryCode>
+      <CountryCapital>Tokyo</CountryCapital>
+      <Population>126476461</Population>
+      <Subdivision>47 prefectures</Subdivision>
+    </Country>
+    <Country>
+      <CountryName>South Korea</CountryName>
+      <CountryCode>KR</CountryCode>
+      <CountryCapital>Seoul</CountryCapital>
+      <Population>51269185</Population>
+      <Subdivision>9 provinces and 8 special cities</Subdivision>
+    </Country>
+  </Continent>
+</Continents>
+

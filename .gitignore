@@ -1,0 +1,7 @@
+# Windows & IDE temp files
+*.tmp
+*.bak
+~$*.xlsx
+~$*.pptx
+Thumbs.db
+.DS_Store

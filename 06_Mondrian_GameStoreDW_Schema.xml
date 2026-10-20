@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ===========================================================================
+     FILE: 06_Mondrian_GameStoreDW_Schema.xml
+     PROJECT: Digital Game Store & In-Game Items Data Warehouse
+     METHODOLOGY: Vaisman & Zimanyi (Chapter 3.10 & Chapter 5.10 Mondrian Cube)
+     DESCRIPTION:
+       Complete Mondrian 4.0 XML Schema defining PhysicalSchema, CalculatedColumnDefs,
+       Shared Dimensions (Time with Calendar & Fiscal Alternative Hierarchies,
+       Product/Game with Parallel Hierarchies, Publisher with Parent-Child Hierarchy,
+       Player with Ragged Geography & hideMemberIf='IfBlankName'),
+       MeasureGroups (FactGameSales & FactItemTransactions + Aggregate Tables),
+       and CalculatedMembers.
+     =========================================================================== -->
+<Schema name="GameStoreDW" metamodelVersion="4.0"
+        description="Digital Game Store and In-Game Items Constellation Cube in Mondrian">
+
+  <!-- 1. PHYSICAL SCHEMA & NAMED CALCULATIONS (Chapter 3 Slide 110-111) -->
+  <PhysicalSchema>
+    <Table name="DimTime" keyColumn="TimeKey">
+      <ColumnDefs>
+        <ColumnDef name="TimeKey" type="Integer"/>
+        <ColumnDef name="Date" type="Date"/>
+        <ColumnDef name="MonthNumber" type="Integer"/>
+        <ColumnDef name="MonthName" type="String"/>
+        <ColumnDef name="Quarter" type="Integer"/>
+        <ColumnDef name="Semester" type="Integer"/>
+        <ColumnDef name="Year" type="Integer"/>
+        <ColumnDef name="FiscalQuarter" type="Integer"/>
+        <ColumnDef name="FiscalSemester" type="Integer"/>
+        <ColumnDef name="FiscalYear" type="Integer"/>
+        <CalculatedColumnDef name="FullMonth" type="String">
+          <ExpressionView>
+            <SQL dialect="SQL Server">
+              <Column name="MonthName"/> + ' ' + CONVERT(CHAR(4), <Column name="Year"/>)
+            </SQL>
+          </ExpressionView>
+        </CalculatedColumnDef>
+        <CalculatedColumnDef name="FullQuarter" type="String">
+          <ExpressionView>
+            <SQL dialect="SQL Server">
+              'Q' + CONVERT(CHAR(1), <Column name="Quarter"/>) + ' ' + CONVERT(CHAR(4), <Column name="Year"/>)
+            </SQL>
+          </ExpressionView>
+        </CalculatedColumnDef>
+        <CalculatedColumnDef name="FullSemester" type="String">
+          <ExpressionView>
+            <SQL dialect="SQL Server">
+              'S' + CONVERT(CHAR(1), <Column name="Semester"/>) + ' ' + CONVERT(CHAR(4), <Column name="Year"/>)
+            </SQL>
+          </ExpressionView>
+        </CalculatedColumnDef>
+      </ColumnDefs>
+    </Table>
+
+    <Table name="DimContinent" keyColumn="ContinentKey"/>
+    <Table name="DimCountry" keyColumn="CountryKey"/>
+    <Table name="DimState" keyColumn="StateKey"/>
+    <Table name="DimCity" keyColumn="CityKey"/>
+
+    <Table name="DimPlayer" keyColumn="PlayerKey">
+      <ColumnDefs>
+        <ColumnDef name="PlayerKey" type="Integer"/>
+        <ColumnDef name="PlayerAltKey" type="String"/>
+        <ColumnDef name="GamerTag" type="String"/>
+        <ColumnDef name="FirstName" type="String"/>
+        <ColumnDef name="LastName" type="String"/>
+        <ColumnDef name="HistoricalVIPLevel" type="String"/>
+        <ColumnDef name="CurrentVIPLevel" type="String"/>
+        <ColumnDef name="CityKey" type="Integer"/>
+        <CalculatedColumnDef name="FullName" type="String">
+          <ExpressionView>
+            <SQL dialect="SQL Server">
+              <Column name="FirstName"/> + ' ' + <Column name="LastName"/>
+            </SQL>
+          </ExpressionView>
+        </CalculatedColumnDef>
+      </ColumnDefs>
+    </Table>
+
+    <Table name="DimPublisher" keyColumn="PublisherKey"/>
+    <Table name="DimCategory" keyColumn="CategoryKey"/>
+    <Table name="DimSubCategory" keyColumn="SubCategoryKey"/>
+    <Table name="DimGame" keyColumn="GameKey"/>
+    <Table name="DimItem" keyColumn="ItemKey"/>
+    <Table name="DimGenre" keyColumn="GenreKey"/>
+    <Table name="BridgeGameGenre"/>
+
+    <Table name="FactGameSales">
+      <ColumnDefs>
+        <ColumnDef name="PlayerKey" type="Integer"/>
+        <ColumnDef name="GameKey" type="Integer"/>
+        <ColumnDef name="PublisherKey" type="Integer"/>
+        <ColumnDef name="PurchaseDateKey" type="Integer"/>
+        <ColumnDef name="ReleaseDateKey" type="Integer"/>
+        <ColumnDef name="OrderNo" type="Integer"/>
+        <ColumnDef name="OrderLineNo" type="Integer"/>
+        <ColumnDef name="Quantity" type="Integer"/>
+        <ColumnDef name="UnitPrice" type="Numeric"/>
+        <ColumnDef name="Discount" type="Numeric"/>
+        <ColumnDef name="GrossSalesAmount" type="Numeric"/>
+        <ColumnDef name="TaxAmount" type="Numeric"/>
+        <CalculatedColumnDef name="OrderLineDesc" type="String">
+          <ExpressionView>
+            <SQL dialect="SQL Server">
+              CONVERT(VARCHAR(10), <Column name="OrderNo"/>) + ' - ' + CONVERT(VARCHAR(5), <Column name="OrderLineNo"/>)
+            </SQL>
+          </ExpressionView>
+        </CalculatedColumnDef>
+      </ColumnDefs>
+    </Table>
+
+    <Table name="FactItemTransactions"/>
+
+    <!-- Links for Snowflake Joins (Chapter 3 Slide 111) -->
+    <Link source="DimContinent" target="DimCountry" foreignKeyColumn="ContinentKey"/>
+    <Link source="DimCountry" target="DimState" foreignKeyColumn="CountryKey"/>
+    <Link source="DimState" target="DimCity" foreignKeyColumn="StateKey"/>
+    <Link source="DimCity" target="DimPlayer" foreignKeyColumn="CityKey"/>
+    <Link source="DimCategory" target="DimSubCategory" foreignKeyColumn="CategoryKey"/>
+    <Link source="DimSubCategory" target="DimGame" foreignKeyColumn="SubCategoryKey"/>
+    <Link source="DimSubCategory" target="DimItem" foreignKeyColumn="SubCategoryKey"/>
+  </PhysicalSchema>
+
+  <!-- 2. SHARED DIMENSIONS (Chapter 3 Slide 112-117) -->
+
+  <!-- Time Dimension with Alternative Calendar & Fiscal Hierarchies (Slide 113) -->
+  <Dimension name="Time" table="DimTime" type="TIME" key="TimeKey">
+    <Attributes>
+      <Attribute name="TimeKey" keyColumn="TimeKey" hasHierarchy="false"/>
+      <Attribute name="Year" keyColumn="Year" levelType="TimeYears"/>
+      <Attribute name="Semester" levelType="TimeHalfYears" nameColumn="FullSemester" orderByColumn="Semester">
+        <Key>
+          <Column name="Year"/>
+          <Column name="Semester"/>
+        </Key>
+      </Attribute>
+      <Attribute name="Quarter" levelType="TimeQuarters" nameColumn="FullQuarter" orderByColumn="Quarter">
+        <Key>
+          <Column name="Year"/>
+          <Column name="Quarter"/>
+        </Key>
+      </Attribute>
+      <Attribute name="Month" levelType="TimeMonths" nameColumn="FullMonth" orderByColumn="MonthNumber">
+        <Key>
+          <Column name="Year"/>
+          <Column name="MonthNumber"/>
+        </Key>
+      </Attribute>
+      <Attribute name="Date" keyColumn="Date" levelType="TimeDays"/>
+      <Attribute name="FiscalYear" keyColumn="FiscalYear" levelType="TimeYears"/>
+      <Attribute name="FiscalQuarter" keyColumn="FiscalQuarter" levelType="TimeQuarters"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Calendar" hasAll="true">
+        <Level attribute="Year"/>
+        <Level attribute="Semester"/>
+        <Level attribute="Quarter"/>
+        <Level attribute="Month"/>
+        <Level attribute="Date"/>
+      </Hierarchy>
+      <Hierarchy name="Fiscal" hasAll="true">
+        <Level attribute="FiscalYear"/>
+        <Level attribute="FiscalQuarter"/>
+        <Level attribute="Month"/>
+        <Level attribute="Date"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+
+  <!-- Game Dimension with Two Parallel Independent Hierarchies: Categories & GameEngine (Slide 114) -->
+  <Dimension name="Game" table="DimGame" key="GameKey">
+    <Attributes>
+      <Attribute name="GameKey" keyColumn="GameKey" hasHierarchy="false"/>
+      <Attribute name="DepartmentName" table="DimCategory" keyColumn="DepartmentName"/>
+      <Attribute name="CategoryName" table="DimCategory" keyColumn="CategoryKey" nameColumn="CategoryName"/>
+      <Attribute name="SubCategoryName" table="DimSubCategory" keyColumn="SubCategoryKey" nameColumn="SubCategoryName"/>
+      <Attribute name="GameTitle" keyColumn="GameKey" nameColumn="GameTitle"/>
+      <Attribute name="EngineVendor" keyColumn="EngineVendor"/>
+      <Attribute name="EngineName" keyColumn="EngineName"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Categories" hasAll="true">
+        <Level name="Department" attribute="DepartmentName"/>
+        <Level name="Category" attribute="CategoryName"/>
+        <Level name="SubCategory" attribute="SubCategoryName"/>
+        <Level name="Game" attribute="GameTitle"/>
+      </Hierarchy>
+      <Hierarchy name="EngineHierarchy" hasAll="true">
+        <Level name="Vendor" attribute="EngineVendor"/>
+        <Level name="Engine" attribute="EngineName"/>
+        <Level name="Game" attribute="GameTitle"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+
+  <!-- Publisher Dimension with Parent-Child Recursive Hierarchy (Slide 116) -->
+  <Dimension name="Publisher" table="DimPublisher" key="PublisherKey">
+    <Attributes>
+      <Attribute name="PublisherKey" keyColumn="PublisherKey" nameColumn="PublisherName"/>
+      <Attribute name="ParentPublisherKey" keyColumn="ParentPublisherKey"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="StudioHierarchy" hasAll="true">
+        <Level name="Studio" attribute="PublisherKey"
+               parentAttribute="ParentPublisherKey" nullParentValue="NULL"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+
+  <!-- Player Dimension with Ragged Geography Hierarchy & hideMemberIf='IfBlankName' (Slide 117) -->
+  <Dimension name="Player" table="DimPlayer" key="PlayerKey">
+    <Attributes>
+      <Attribute name="Continent" table="DimContinent" keyColumn="ContinentKey" nameColumn="ContinentName"/>
+      <Attribute name="Country" table="DimCountry" keyColumn="CountryKey" nameColumn="CountryName"/>
+      <Attribute name="Region" table="DimState" keyColumn="RegionName"/>
+      <Attribute name="State" table="DimState" keyColumn="StateKey" nameColumn="StateName"/>
+      <Attribute name="City" table="DimCity" keyColumn="CityKey" nameColumn="CityName"/>
+      <Attribute name="Player" keyColumn="PlayerKey" nameColumn="GamerTag"/>
+      <Attribute name="FullName" keyColumn="FullName"/>
+      <Attribute name="HistoricalVIPLevel" keyColumn="HistoricalVIPLevel"/>
+      <Attribute name="CurrentVIPLevel" keyColumn="CurrentVIPLevel"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Geography" hasAll="true">
+        <Level attribute="Continent"/>
+        <Level attribute="Country"/>
+        <Level attribute="Region" hideMemberIf="IfBlankName"/>
+        <Level attribute="State" hideMemberIf="IfBlankName"/>
+        <Level attribute="City"/>
+        <Level attribute="Player"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+
+  <!-- Degenerate Order Dimension -->
+  <Dimension name="Order" table="FactGameSales" key="OrderLineDesc">
+    <Attributes>
+      <Attribute name="OrderNo" keyColumn="OrderNo"/>
+      <Attribute name="OrderLine" keyColumn="OrderLineDesc"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="OrderHierarchy" hasAll="true">
+        <Level attribute="OrderNo"/>
+        <Level attribute="OrderLine"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+
+  <!-- 3. CUBE, MEASURE GROUPS, AGGREGATE TABLES & CALCULATED MEMBERS (Slide 118-121 & Ch 5 Slide 43) -->
+  <Cube name="GameStoreCube">
+    <Dimensions>
+      <Dimension source="Time" name="Purchase Date"/>
+      <Dimension source="Time" name="Release Date"/>
+      <Dimension source="Game"/>
+      <Dimension source="Publisher"/>
+      <Dimension source="Player"/>
+      <Dimension source="Order"/>
+    </Dimensions>
+
+    <MeasureGroups>
+      <!-- Measure Group 1: FactGameSales with Mondrian Aggregate Table (Chapter 5 Slide 42-43) -->
+      <MeasureGroup name="GameSales" table="FactGameSales">
+        <Measures>
+          <Measure name="Quantity" column="Quantity" aggregator="sum" formatString="#,##0"/>
+          <Measure name="Unit Price" column="UnitPrice" aggregator="avg" formatString="$#,##0.00"/>
+          <Measure name="Discount" column="Discount" aggregator="avg" formatString="#0.00%"/>
+          <Measure name="Gross Sales Amount" column="GrossSalesAmount" aggregator="sum" formatString="$#,##0.00"/>
+          <Measure name="Tax Amount" column="TaxAmount" aggregator="sum" formatString="$#,##0.00"/>
+          <Measure name="Game Sales Count" aggregator="count" formatString="#,##0"/>
+        </Measures>
+        <DimensionLinks>
+          <ForeignKeyLink dimension="Purchase Date" foreignKeyColumn="PurchaseDateKey"/>
+          <ForeignKeyLink dimension="Release Date" foreignKeyColumn="ReleaseDateKey"/>
+          <ForeignKeyLink dimension="Game" foreignKeyColumn="GameKey"/>
+          <ForeignKeyLink dimension="Publisher" foreignKeyColumn="PublisherKey"/>
+          <ForeignKeyLink dimension="Player" foreignKeyColumn="PlayerKey"/>
+          <FactLink dimension="Order"/>
+        </DimensionLinks>
+      </MeasureGroup>
+
+      <!-- Measure Group 2: FactItemTransactions (Constellation Schema) -->
+      <MeasureGroup name="ItemTransactions" table="FactItemTransactions">
+        <Measures>
+          <Measure name="Item Quantity" column="Quantity" aggregator="sum" formatString="#,##0"/>
+          <Measure name="Gross Item Amount" column="GrossItemAmount" aggregator="sum" formatString="$#,##0.00"/>
+          <Measure name="Platform Fee Amount" column="PlatformFeeAmount" aggregator="sum" formatString="$#,##0.00"/>
+          <Measure name="Wallet Balance After" column="WalletBalanceAfter" aggregator="avg" formatString="$#,##0.00"/>
+        </Measures>
+        <DimensionLinks>
+          <ForeignKeyLink dimension="Purchase Date" foreignKeyColumn="PurchaseDateKey"/>
+          <ForeignKeyLink dimension="Game" foreignKeyColumn="GameKey"/>
+          <ForeignKeyLink dimension="Publisher" foreignKeyColumn="PublisherKey"/>
+          <ForeignKeyLink dimension="Player" foreignKeyColumn="PlayerKey"/>
+        </DimensionLinks>
+      </MeasureGroup>
+    </MeasureGroups>
+
+    <!-- Mondrian Aggregate Table Definition (Chapter 5 Slide 43) -->
+    <Table name="FactGameSales">
+      <AggName name="agg_SalesByYearCategory">
+        <AggFactCount column="RowCount"/>
+        <AggMeasure name="[Measures].[Unit Price]" column="AvgUnitPrice"/>
+        <AggMeasure name="[Measures].[Gross Sales Amount]" column="TotalGrossSalesAmount"/>
+        <AggLevel name="[Game].[Categories].[Category]" column="CategoryName"/>
+        <AggLevel name="[Purchase Date].[Calendar].[Year]" column="Year"/>
+      </AggName>
+    </Table>
+
+    <!-- Calculated Members (Derived Measures - Chapter 3 Slide 120) -->
+    <CalculatedMembers>
+      <CalculatedMember name="Net Sales Amount" dimension="Measures"
+                        formula="[Measures].[Gross Sales Amount] - [Measures].[Tax Amount]">
+        <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+      </CalculatedMember>
+      <CalculatedMember name="Net Profit Margin %" dimension="Measures"
+                        formula="([Measures].[Gross Sales Amount] - [Measures].[Tax Amount]) / [Measures].[Gross Sales Amount]">
+        <CalculatedMemberProperty name="FORMAT_STRING" value="#0.00%"/>
+      </CalculatedMember>
+    </CalculatedMembers>
+  </Cube>
+</Schema>
+
